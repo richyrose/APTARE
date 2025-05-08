@@ -1,0 +1,899 @@
+<com.aptare.sc.dal.versioning.ObjectMap>
+  <version>2</version>
+  <className>com.aptare.sc.domain.reportTemplateDesigner.RtdTemplate</className>
+  <data>
+    <entry>
+      <string>longDescription</string>
+      <string>Plots the future volume</string>
+    </entry>
+    <entry>
+      <string>reportVersion</string>
+      <string>1.0</string>
+    </entry>
+    <entry>
+      <string>isCloudTemplate</string>
+      <boolean>false</boolean>
+    </entry>
+    <entry>
+      <string>inventoryType</string>
+      <list>
+        <long>0</long>
+      </list>
+    </entry>
+    <entry>
+      <string>reportGuid</string>
+      <string>86f67117-af09-4514-8706-614b414931ba</string>
+    </entry>
+    <entry>
+      <string>inventoryCategory</string>
+      <long>0</long>
+    </entry>
+    <entry>
+      <string>description</string>
+      <string>05/08/2025 (Cohesity,Rubrik,Veeam,Oracle RMAN)</string>
+    </entry>
+    <entry>
+      <string>exportName</string>
+      <string>Data Protection Client Volume Forecast CL v1.0</string>
+    </entry>
+    <entry>
+      <string>version</string>
+      <double>0.0</double>
+    </entry>
+    <entry>
+      <string>products</string>
+      <list>
+        <long>231</long>
+      </list>
+    </entry>
+    <entry>
+      <string>reportDefinition</string>
+      <com.aptare.sc.dal.versioning.ObjectMap>
+        <version>1</version>
+        <className>com.aptare.sc.domain.report.ReportDefinition</className>
+        <data>
+          <entry>
+            <string>drilldown</string>
+            <boolean>false</boolean>
+          </entry>
+          <entry>
+            <string>designerComponents</string>
+            <list>
+              <com.aptare.sc.domain.reportDesigner.ReportDesignerComponent>
+                <name>timePeriod</name>
+                <componentScript>
+                  <before/>
+                  <after/>
+                </componentScript>
+                <configuration>
+                  <entry>
+                    <string>defaultTimePeriod</string>
+                    <string>1090</string>
+                  </entry>
+                  <entry>
+                    <string>showTime</string>
+                    <string>false</string>
+                  </entry>
+                </configuration>
+                <referenceData/>
+              </com.aptare.sc.domain.reportDesigner.ReportDesignerComponent>
+              <com.aptare.sc.domain.reportDesigner.ReportDesignerComponent>
+                <name>scope</name>
+                <componentScript>
+                  <before/>
+                  <after/>
+                </componentScript>
+                <configuration>
+                  <entry>
+                    <string>nodes</string>
+                    <string>SERVERS</string>
+                  </entry>
+                  <entry>
+                    <string>hideCascade</string>
+                    <string>false</string>
+                  </entry>
+                  <entry>
+                    <string>cascade</string>
+                    <string>true</string>
+                  </entry>
+                </configuration>
+                <referenceData/>
+              </com.aptare.sc.domain.reportDesigner.ReportDesignerComponent>
+              <com.aptare.sc.domain.reportDesigner.ReportDesignerComponent>
+                <name>freeCombo</name>
+                <componentScript>
+                  <before/>
+                  <after/>
+                </componentScript>
+                <configuration>
+                  <entry>
+                    <string>freeComboHeading1</string>
+                    <string>Values in:</string>
+                  </entry>
+                  <entry>
+                    <string>freeComboValues1</string>
+                    <string>KB,MB,GB,TB,PB</string>
+                  </entry>
+                  <entry>
+                    <string>freeComboDefaultValue1</string>
+                    <string>GB</string>
+                  </entry>
+                </configuration>
+                <referenceData/>
+              </com.aptare.sc.domain.reportDesigner.ReportDesignerComponent>
+            </list>
+          </entry>
+          <entry>
+            <string>descriptiveName</string>
+            <string>Data Protection Client Volume Forecast CL v1.0</string>
+          </entry>
+          <entry>
+            <string>encodedDataSource</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>productsSupported</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>supportsPagenation</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>specalisedReportBuilder</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>advancedComponents</string>
+            <list/>
+          </entry>
+          <entry>
+            <string>systemName</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>composedReports</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>postReportInterceptor</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>legendTitle</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>designerScript</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>dataSource</string>
+            <string>--Author: rich.rose@cohesity.com&#xd;
+--Last Updated: 05/08/2025&#xd;
+--Forecasting Backup Framework II Future value&#xd;
+--Similar to original framework except rather than telling you when you will run out&#xd;
+--It tells you what a value will be in the future&#xd;
+--Also does not use POP only Linear because first value could be an incremental &#xd;
+--you cant really compare first backup to last backup&#xd;
+WITH &#xd;
+var AS (&#xd;
+SELECT&#xd;
+  DECODE(&apos;${freeCombo1}&apos;,&#xd;
+    &apos;KB&apos;,1,&#xd;
+    &apos;MB&apos;,1024,&#xd;
+    &apos;GB&apos;,(1024*1024),&#xd;
+    &apos;TB&apos;,(1024*1024*1024),&#xd;
+    &apos;PB&apos;,(1024*1024*1024*1024))&#xd;
+  AS  div_by &#xd;
+FROM&#xd;
+  apt_v_dual&#xd;
+),&#xd;
+f0 AS (-- Forecasting begins here. First, get 1 entry per day&#xd;
+SELECT &#xd;
+  TRUNC(j.finish_date,&apos;HH24&apos;) AS the_date,&#xd;
+  j.server_id AS the_id_1,&#xd;
+  j.client_id AS the_id_2,&#xd;
+  COUNT(j.job_id) AS job_count,&#xd;
+  SUM(j.kilobytes/div_by) AS the_value&#xd;
+FROM &#xd;
+  apt_v_job_detail j,&#xd;
+  var&#xd;
+WHERE &#xd;
+  j.client_id IN (${hosts})&#xd;
+  AND j.finish_date BETWEEN ${startDate} AND ${endDate}&#xd;
+  AND j.kilobytes &gt; 0&#xd;
+  AND j.summary_status &lt; 2&#xd;
+  AND j.server_id &lt;&gt; j.client_id&#xd;
+GROUP BY&#xd;
+  TRUNC(j.finish_date,&apos;HH24&apos;),&#xd;
+  j.server_id,&#xd;
+  j.client_id&#xd;
+),&#xd;
+--&#xd;
+--Everything from here down is calculated for you nothing else to do&#xd;
+--Except any final joins at the very end to pull in additional columns&#xd;
+--&#xd;
+f1 AS (--This step provides the row number needed to make the REGR_SLOPE() function to work properly&#xd;
+SELECT&#xd;
+  the_date,&#xd;
+  ROW_NUMBER() OVER (PARTITION BY the_id_1, the_id_2 ORDER BY the_id_1, the_id_2) AS row_number,&#xd;
+  AVG(the_value) OVER (PARTITION BY the_id_1, the_id_2 ORDER BY the_date ASC ROWS BETWEEN 3 PRECEDING AND 0 FOLLOWING) AS mov_3_avg,&#xd;
+  the_id_1,&#xd;
+  the_id_2,&#xd;
+  the_value,&#xd;
+  job_count&#xd;
+FROM&#xd;
+  f0&#xd;
+ORDER BY&#xd;
+  the_id_1,&#xd;
+  the_id_2,&#xd;
+  the_date&#xd;
+),&#xd;
+f2 AS (--This is the actual code block for calculating trends&#xd;
+SELECT DISTINCT&#xd;
+  the_id_1, &#xd;
+  the_id_2,&#xd;
+  COUNT(*) OVER (PARTITION BY the_id_1, the_id_2) AS nbr_of_days,&#xd;
+  SUM(job_count) OVER (PARTITION BY the_id_1, the_id_2) AS sum_of_the_jobs,&#xd;
+  MAX(the_value) OVER (PARTITION BY the_id_1, the_id_2) AS max_of_the_value,&#xd;
+  AVG(the_value) OVER (PARTITION BY the_id_1, the_id_2) AS avg_of_the_value,&#xd;
+  SUM(the_value) OVER (PARTITION BY the_id_1, the_id_2) AS sum_of_the_value,&#xd;
+  FIRST_VALUE(the_date) OVER (PARTITION BY the_id_1, the_id_2 ORDER BY the_date ASC) AS first_date, &#xd;
+  FIRST_VALUE(the_date) OVER (PARTITION BY the_id_1, the_id_2 ORDER BY the_date DESC) AS last_date,&#xd;
+  FIRST_VALUE(the_value) OVER (PARTITION BY the_id_1, the_id_2 ORDER BY the_date ASC) AS first_value, &#xd;
+  FIRST_VALUE(the_value) OVER (PARTITION BY the_id_1, the_id_2 ORDER BY the_date DESC) AS last_value,&#xd;
+  REGR_SLOPE(the_value, row_number) OVER (PARTITION BY the_id_1, the_id_2) AS the_value_lin,&#xd;
+  REGR_R2(the_value, row_number) OVER (PARTITION BY the_id_1, the_id_2) AS r2_value,&#xd;
+  REGR_AVGY(the_value, row_number) OVER (PARTITION BY the_id_1, the_id_2) AS avg_y,&#xd;
+  REGR_INTERCEPT(the_value, row_number) OVER (PARTITION BY the_id_1, the_id_2) AS y_intercept&#xd;
+FROM&#xd;
+  f1&#xd;
+ORDER BY&#xd;
+  the_id_1,&#xd;
+  the_id_2&#xd;
+),&#xd;
+f3 AS (--Format the results of the forecast &#xd;
+SELECT&#xd;
+  f2.the_id_1,&#xd;
+  f2.the_id_2,&#xd;
+  f2.first_date, &#xd;
+  ROUND(f2.first_value,2) AS first_value, &#xd;
+  f2.last_date,&#xd;
+  ROUND(f2.last_value,2) AS last_value,&#xd;
+  f2.nbr_of_days,&#xd;
+  f2.sum_of_the_jobs,&#xd;
+  ROUND(f2.the_value_lin,2) AS the_value_lin,&#xd;
+  ROUND((f2.r2_value * 100),2) AS r2_value_pct,&#xd;
+  ROUND(f2.avg_y,2) AS avg_y,&#xd;
+  ROUND(f2.sum_of_the_value,2) AS sum_of_the_value,&#xd;
+  ROUND(f2.max_of_the_value,2) AS max_of_the_value,&#xd;
+  ROUND(f2.avg_of_the_value,2) AS avg_of_the_value,&#xd;
+  ROUND((f2.avg_y + (f2.the_value_lin*30)),2) AS lin_30_day_forecast,&#xd;
+  ROUND((f2.avg_y + (f2.the_value_lin*180)),2) AS lin_180_day_forecast,&#xd;
+  ROUND((f2.avg_y + (f2.the_value_lin*365)),2) AS lin_365_day_forecast&#xd;
+FROM&#xd;
+  f2&#xd;
+),&#xd;
+--Forecasting ends here&#xd;
+s1 AS (-- Generate sparklines&#xd;
+SELECT&#xd;
+  f1.the_id_1,&#xd;
+  f1.the_id_2,&#xd;
+  rtd.collectString(CAST(COLLECT(TO_CHAR(ROUND(the_value,2)) ORDER BY the_date) AS StringListType),&apos;, &apos;) the_spk&#xd;
+FROM&#xd;
+  f1&#xd;
+GROUP BY &#xd;
+  f1.the_id_1,&#xd;
+  f1.the_id_2&#xd;
+),&#xd;
+s2 AS (-- Trend sparklines&#xd;
+SELECT&#xd;
+  f2.the_id_1,&#xd;
+  f2.the_id_2,&#xd;
+  rtd.collectString(CAST(COLLECT(TO_CHAR(ROUND(f2.y_intercept + (f1.row_number * f2.the_value_lin),2)) &#xd;
+    ORDER BY f1.row_number) AS StringListType),&apos;, &apos;)&#xd;
+  AS lin_spk&#xd;
+FROM&#xd;
+  f1,&#xd;
+  f2&#xd;
+WHERE&#xd;
+  f1.the_id_1 = f2.the_id_1&#xd;
+  AND f1.the_id_2 = f2.the_id_2&#xd;
+GROUP BY &#xd;
+  f2.the_id_1,&#xd;
+  f2.the_id_2&#xd;
+),&#xd;
+s3 AS (-- Generate sparklines&#xd;
+SELECT&#xd;
+  f1.the_id_1,&#xd;
+  f1.the_id_2,&#xd;
+  rtd.collectString(CAST(COLLECT(TO_CHAR(ROUND(f1.mov_3_avg,2)) ORDER BY f1.the_date) AS StringListType),&apos;, &apos;) mov_3_spk&#xd;
+FROM&#xd;
+  f1&#xd;
+GROUP BY &#xd;
+  f1.the_id_1,&#xd;
+  f1.the_id_2&#xd;
+)&#xd;
+SELECT&#xd;
+  f3.the_id_1 AS server_id,&#xd;
+  s.hostname AS server_name,&#xd;
+  f3.the_id_2 AS client_id,&#xd;
+  c.hostname AS client_name,&#xd;
+  s1.the_spk,&#xd;
+  s2.lin_spk,&#xd;
+  s3.mov_3_spk,&#xd;
+  f3.avg_y,&#xd;
+  f3.sum_of_the_jobs,&#xd;
+  f3.nbr_of_days,&#xd;
+  f3.sum_of_the_value,&#xd;
+  f3.max_of_the_value,&#xd;
+  f3.avg_of_the_value,&#xd;
+  (f3.max_of_the_value/NULLIF(f3.avg_of_the_value,0))*100 AS pct_over_avg,&#xd;
+  f3.first_date, &#xd;
+  f3.first_value, &#xd;
+  f3.last_date,&#xd;
+  f3.last_value,&#xd;
+  f3.the_value_lin,&#xd;
+  f3.the_value_lin/NULLIF((f3.sum_of_the_value/f3.nbr_of_days),0)*100 the_value_lin_pct,&#xd;
+  CASE &#xd;
+    WHEN (f3.the_value_lin) &lt; 0 THEN &apos;Decreased&apos;&#xd;
+    WHEN (f3.the_value_lin) = 0 THEN &apos;Did Not Change&apos;&#xd;
+    WHEN (f3.the_value_lin) &gt; 0 THEN &apos;Increased&apos;&#xd;
+  END usage_name,&#xd;
+  CASE &#xd;
+    WHEN (f3.the_value_lin) &lt; 0 THEN &apos;trend_down&apos;&#xd;
+    WHEN (f3.the_value_lin) = 0 THEN &apos;trend_flat&apos;&#xd;
+    WHEN (f3.the_value_lin) &gt; 0 THEN &apos;trend_up&apos;&#xd;
+  END trend_icon,&#xd;
+  f3.r2_value_pct,&#xd;
+  lin_30_day_forecast,&#xd;
+  lin_180_day_forecast,&#xd;
+  lin_365_day_forecast&#xd;
+FROM&#xd;
+  f3,&#xd;
+  s1,&#xd;
+  s2,&#xd;
+  s3,&#xd;
+  apt_v_server s,&#xd;
+  apt_v_server c&#xd;
+WHERE&#xd;
+  f3.the_id_1 = s1.the_id_1&#xd;
+ AND f3.the_id_2 = s1.the_id_2&#xd;
+  AND f3.the_id_1 = s2.the_id_1&#xd;
+  AND f3.the_id_2 = s2.the_id_2&#xd;
+  AND f3.the_id_1 = s3.the_id_1&#xd;
+  AND f3.the_id_2 = s3.the_id_2&#xd;
+  AND f3.the_id_1 = s.server_id&#xd;
+  AND f3.the_id_2 = c.server_id&#xd;
+ORDER BY&#xd;
+  1,4</string>
+          </entry>
+        </data>
+      </com.aptare.sc.dal.versioning.ObjectMap>
+    </entry>
+    <entry>
+      <string>authorUserId</string>
+      <long>100545</long>
+    </entry>
+    <entry>
+      <string>templateName</string>
+      <null/>
+    </entry>
+    <entry>
+      <string>id</string>
+      <long>120060</long>
+    </entry>
+    <entry>
+      <string>reportDecorator</string>
+      <com.aptare.sc.dal.versioning.ObjectMap>
+        <version>2</version>
+        <className>com.aptare.sc.domain.report.Decorator</className>
+        <data>
+          <entry>
+            <string>excludes</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>rightYAxisRangeName</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>eventNotFoundComment</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>footer</string>
+            <string></string>
+          </entry>
+          <entry>
+            <string>heatMapMinColor</string>
+            <string>#ffffff</string>
+          </entry>
+          <entry>
+            <string>sqlReportData</string>
+            <string>[{&quot;selected&quot;:false,&quot;name&quot;:&quot;server_id&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;server_id&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;server_name&quot;,&quot;typeName&quot;:&quot;varchar2&quot;,&quot;label&quot;:&quot;Backup Server&quot;,&quot;formatter&quot;:&quot;&quot;,&quot;formatPattern&quot;:&quot;&quot;,&quot;alignment&quot;:&quot;&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:false,&quot;name&quot;:&quot;client_id&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;client_id&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;client_name&quot;,&quot;typeName&quot;:&quot;varchar2&quot;,&quot;label&quot;:&quot;Client&quot;,&quot;formatter&quot;:&quot;&quot;,&quot;formatPattern&quot;:&quot;&quot;,&quot;alignment&quot;:&quot;&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;the_spk&quot;,&quot;typeName&quot;:&quot;varchar2&quot;,&quot;label&quot;:&quot;Backup History&quot;,&quot;formatter&quot;:&quot;AreaSparklineFormatter&quot;,&quot;formatPattern&quot;:&quot;&quot;,&quot;alignment&quot;:&quot;&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;lin_spk&quot;,&quot;typeName&quot;:&quot;varchar2&quot;,&quot;label&quot;:&quot;Linear Trend&quot;,&quot;formatter&quot;:&quot;AreaSparklineFormatter&quot;,&quot;formatPattern&quot;:&quot;&quot;,&quot;alignment&quot;:&quot;&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;mov_3_spk&quot;,&quot;typeName&quot;:&quot;varchar2&quot;,&quot;label&quot;:&quot;3 Day Moving Average&quot;,&quot;formatter&quot;:&quot;AreaSparklineFormatter&quot;,&quot;formatPattern&quot;:&quot;&quot;,&quot;alignment&quot;:&quot;&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;avg_y&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;Avg Y&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###,##0&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;sum_of_the_jobs&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;#Jobs&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###,##0&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;nbr_of_days&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;#Days&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###,##0&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;sum_of_the_value&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;Total Volume&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;sum&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;max_of_the_value&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;Largest Backup&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;avg_of_the_value&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;Avg Backup&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;pct_over_avg&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;%Over Avg&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###,##0&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;first_date&quot;,&quot;typeName&quot;:&quot;date&quot;,&quot;label&quot;:&quot;First Date&quot;,&quot;formatter&quot;:&quot;DateFormatter&quot;,&quot;formatPattern&quot;:&quot;&quot;,&quot;alignment&quot;:&quot;&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;first_value&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;First Value&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;sum&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;last_date&quot;,&quot;typeName&quot;:&quot;date&quot;,&quot;label&quot;:&quot;Last Date&quot;,&quot;formatter&quot;:&quot;DateFormatter&quot;,&quot;formatPattern&quot;:&quot;&quot;,&quot;alignment&quot;:&quot;&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;last_value&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;Last Value&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;sum&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;the_value_lin&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;Daily Change Linear&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;sum&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;the_value_lin_pct&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;%Change Linear&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&apos;%&apos;&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;average&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;usage_name&quot;,&quot;typeName&quot;:&quot;varchar2&quot;,&quot;label&quot;:&quot;Job Volume Change&quot;,&quot;formatter&quot;:&quot;&quot;,&quot;formatPattern&quot;:&quot;&quot;,&quot;alignment&quot;:&quot;&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;sum&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;trend_icon&quot;,&quot;typeName&quot;:&quot;varchar2&quot;,&quot;label&quot;:&quot;Trend&quot;,&quot;formatter&quot;:&quot;StatusIconFormatter&quot;,&quot;formatPattern&quot;:&quot;&quot;,&quot;alignment&quot;:&quot;center&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;r2_value_pct&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;Probability&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&apos;%&apos;&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;lin_30_day_forecast&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;30 Day Forecast Lin&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;sum&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;Avg size + the daily trend * 30&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;lin_180_day_forecast&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;6 Month Forecast Lin&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;sum&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;Avg size + the daily trend * 180&quot;,&quot;typeOverride&quot;:&quot;&quot;},{&quot;selected&quot;:true,&quot;name&quot;:&quot;lin_365_day_forecast&quot;,&quot;typeName&quot;:&quot;number&quot;,&quot;label&quot;:&quot;1 Yr Forecast Lin&quot;,&quot;formatter&quot;:&quot;CustomNumberFormatter&quot;,&quot;formatPattern&quot;:&quot;###,###.00&quot;,&quot;alignment&quot;:&quot;right&quot;,&quot;barType&quot;:&quot;bar&quot;,&quot;aggregation&quot;:&quot;sum&quot;,&quot;colour&quot;:&quot;&quot;,&quot;fieldFormatter&quot;:&quot;&quot;,&quot;drilldown&quot;:&quot;&quot;,&quot;additionalDetail&quot;:&quot;Avg size + the daily trend * 365&quot;,&quot;typeOverride&quot;:&quot;&quot;}]</string>
+          </entry>
+          <entry>
+            <string>groupBy</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>title</string>
+            <string>Data Protection Client Volume Forecast CL v1.0</string>
+          </entry>
+          <entry>
+            <string>chartHeight</string>
+            <int>0</int>
+          </entry>
+          <entry>
+            <string>inputUnit</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>groupBySuppressHeaders</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>entityName</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>leftYAxisRangeName</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>renderType</string>
+            <com.aptare.sc.domain.report.enumerations.RenderType>table</com.aptare.sc.domain.report.enumerations.RenderType>
+          </entry>
+          <entry>
+            <string>reportDataConverter</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>inherits</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>buttonText</string>
+            <string></string>
+          </entry>
+          <entry>
+            <string>displayScope</string>
+            <boolean>true</boolean>
+          </entry>
+          <entry>
+            <string>leftTitle</string>
+            <string></string>
+          </entry>
+          <entry>
+            <string>groups</string>
+            <list>
+              <com.aptare.sc.domain.report.GroupDecorator>
+                <fields>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <type>hidden</type>
+                    <caption>server_id</caption>
+                    <name>server_id</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatPattern>###</formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Backup Server</caption>
+                    <name>server_name</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <type>hidden</type>
+                    <caption>client_id</caption>
+                    <name>client_id</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatPattern>###</formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Client</caption>
+                    <name>client_name</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Backup History</caption>
+                    <name>the_spk</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <formatter>AreaSparklineFormatter</formatter>
+                    <formatPattern></formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Linear Trend</caption>
+                    <name>lin_spk</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <formatter>AreaSparklineFormatter</formatter>
+                    <formatPattern></formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>3 Day Moving Average</caption>
+                    <name>mov_3_spk</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <formatter>AreaSparklineFormatter</formatter>
+                    <formatPattern></formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Avg Y</caption>
+                    <name>avg_y</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###,##0</formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>#Jobs</caption>
+                    <name>sum_of_the_jobs</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###,##0</formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>#Days</caption>
+                    <name>nbr_of_days</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###,##0</formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Total Volume</caption>
+                    <name>sum_of_the_value</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00</formatPattern>
+                    <aggregation>sum</aggregation>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Largest Backup</caption>
+                    <name>max_of_the_value</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00</formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Avg Backup</caption>
+                    <name>avg_of_the_value</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00</formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>%Over Avg</caption>
+                    <name>pct_over_avg</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###,##0</formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>First Date</caption>
+                    <name>first_date</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <formatter>DateFormatter</formatter>
+                    <formatPattern></formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>First Value</caption>
+                    <name>first_value</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00</formatPattern>
+                    <aggregation>sum</aggregation>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Last Date</caption>
+                    <name>last_date</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <formatter>DateFormatter</formatter>
+                    <formatPattern></formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Last Value</caption>
+                    <name>last_value</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00</formatPattern>
+                    <aggregation>sum</aggregation>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Daily Change Linear</caption>
+                    <name>the_value_lin</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00</formatPattern>
+                    <aggregation>sum</aggregation>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>%Change Linear</caption>
+                    <name>the_value_lin_pct</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00&apos;%&apos;</formatPattern>
+                    <aggregation>average</aggregation>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Job Volume Change</caption>
+                    <name>usage_name</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <aggregation>sum</aggregation>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Trend</caption>
+                    <name>trend_icon</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>center</align>
+                    <formatter>StatusIconFormatter</formatter>
+                    <formatPattern></formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>Probability</caption>
+                    <name>r2_value_pct</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00&apos;%&apos;</formatPattern>
+                    <wrap>Y</wrap>
+                    <additionalDetail></additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>30 Day Forecast Lin</caption>
+                    <name>lin_30_day_forecast</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00</formatPattern>
+                    <aggregation>sum</aggregation>
+                    <wrap>Y</wrap>
+                    <additionalDetail>Avg size + the daily trend * 30</additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>6 Month Forecast Lin</caption>
+                    <name>lin_180_day_forecast</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00</formatPattern>
+                    <aggregation>sum</aggregation>
+                    <wrap>Y</wrap>
+                    <additionalDetail>Avg size + the daily trend * 180</additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                  <com.aptare.sc.domain.report.FieldDecorator>
+                    <caption>1 Yr Forecast Lin</caption>
+                    <name>lin_365_day_forecast</name>
+                    <fieldIndex>0</fieldIndex>
+                    <color></color>
+                    <secondaryColor></secondaryColor>
+                    <align>right</align>
+                    <formatter>CustomNumberFormatter</formatter>
+                    <formatPattern>###,###.00</formatPattern>
+                    <aggregation>sum</aggregation>
+                    <wrap>Y</wrap>
+                    <additionalDetail>Avg size + the daily trend * 365</additionalDetail>
+                    <drillDown></drillDown>
+                    <rowCount>0</rowCount>
+                    <targets/>
+                  </com.aptare.sc.domain.report.FieldDecorator>
+                </fields>
+              </com.aptare.sc.domain.report.GroupDecorator>
+            </list>
+          </entry>
+          <entry>
+            <string>chartWidth</string>
+            <int>0</int>
+          </entry>
+          <entry>
+            <string>cacheDataFields</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>legendAlignment</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>rightTitle</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>buttonScript</string>
+            <string></string>
+          </entry>
+          <entry>
+            <string>header</string>
+            <string>Values in: ${freeCombo1}</string>
+          </entry>
+          <entry>
+            <string>legendTitle</string>
+            <null/>
+          </entry>
+          <entry>
+            <string>heatMapMaxColor</string>
+            <string>#b71008</string>
+          </entry>
+        </data>
+      </com.aptare.sc.dal.versioning.ObjectMap>
+    </entry>
+  </data>
+</com.aptare.sc.dal.versioning.ObjectMap>.SeAhXkVi9pLotHghlbKoIm2HzwQmoHW1y+Qnswhexas=
